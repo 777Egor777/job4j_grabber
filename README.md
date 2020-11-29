@@ -1,15 +1,6 @@
-[![Build Status](https://travis-ci.org/777Egor777/tracker.svg?branch=master)](https://travis-ci.org/777Egor777/tracker)
-[![codecov](https://codecov.io/gh/777Egor777/tracker/branch/master/graph/badge.svg)](https://codecov.io/gh/777Egor777/tracker)
+[![Build Status](https://travis-ci.org/777Egor777/job4j_grabber.svg?branch=master)](https://travis-ci.org/777Egor777/job4j_grabber)
+[![codecov](https://codecov.io/gh/777Egor777/job4j_grabber/branch/master/graph/badge.svg?token=81G1TFYOK0)](https://codecov.io/gh/777Egor777/job4j_grabber)
 
-# tracker
+# grabber
 
-Проект "Трекер"
-
-# Change README.md
-
-Объединение зафиксированных изменений
-Проект "Трекер".
-
-В курсе производилась работа с ветками git.
-
-В курсе производится работа с ветками git. Создали ветку с именем "task_139841" и внесли изменения в проект.
+Проект "Аггрегатор Java вакансий"
