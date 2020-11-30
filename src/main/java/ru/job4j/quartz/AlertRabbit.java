@@ -6,6 +6,7 @@ import org.quartz.impl.StdSchedulerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
+import java.util.Date;
 import java.util.Properties;
 
 public class AlertRabbit {
@@ -55,7 +56,7 @@ public class AlertRabbit {
             Connection cn = (Connection) context.getJobDetail().getJobDataMap().get("connection");
             try (PreparedStatement ps = cn.prepareStatement(
                     "insert into alert_rabbit.rabbit(created) values(?);")) {
-                ps.setDate(1, new Date(new java.util.Date().getTime()));
+                ps.setTimestamp(1, new Timestamp(new Date().getTime()));
                 ps.executeUpdate();
             } catch (SQLException throwable) {
                 throwable.printStackTrace();
