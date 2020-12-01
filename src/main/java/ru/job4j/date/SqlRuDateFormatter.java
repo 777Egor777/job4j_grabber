@@ -11,6 +11,7 @@ public class SqlRuDateFormatter {
     private final static String YESTERDAY = "вчера";
     private final static int MILLIS_IN_DAY = 24 * 60 * 60 * 1000;
     private final static Map<String, Integer> MONTH_MAP = new HashMap<>();
+    private final static int YEAR_ADDITION = 2000;
 
     private int year;
     private int month;
@@ -56,7 +57,7 @@ public class SqlRuDateFormatter {
             String[] parts = inDateStr.split(" ");
             day =  Integer.parseInt(parts[0]);
             month =  MONTH_MAP.get(parts[1]);
-            year =  Integer.parseInt(parts[2]) + 2000;
+            year =  Integer.parseInt(parts[2]) + YEAR_ADDITION;
         }
     }
     private void parseTime(Calendar date, String inDateStr) {
