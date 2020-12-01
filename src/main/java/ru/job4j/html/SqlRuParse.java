@@ -4,26 +4,31 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.job4j.grabber.Parse;
+import ru.job4j.grabber.PostFactory;
+import ru.job4j.model.Post;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
-public class SqlRuParse {
-    public static void main(String[] args) throws IOException {
-        String url = "https://www.sql.ru/forum/job-offers";
-        for (int i = 1; i <= 5; ++i) {
-            parsePage(String.format("%s/%d", url, i));
-        }
-    }
+public class SqlRuParse implements Parse {
 
-    public static void parsePage(String url) throws IOException {
-        Document doc = Jsoup.connect(url).get();
+    @Override
+    public List<Post> list(String link) throws IOException {
+        List<Post> result = new LinkedList<>();
+        Document doc = Jsoup.connect(link).get();
         Elements row = doc.select(".postslisttopic");
         for (Element td : row) {
             Element href = td.child(0);
-            System.out.println(href.attr("href"));
-            System.out.println(href.text());
-            Element date = td.parent().child(5);
-            System.out.println(date.text());
+            String postLink = href.attr("href");
+            result.add(detail(postLink));
         }
+        return result;
+    }
+
+    @Override
+    public Post detail(String link) throws IOException {
+        return PostFactory.makePost(link);
     }
 }
