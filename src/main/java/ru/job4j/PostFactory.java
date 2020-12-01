@@ -1,4 +1,4 @@
-package ru.job4j.grabber;
+package ru.job4j;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -9,6 +9,14 @@ import ru.job4j.model.Post;
 
 import java.io.IOException;
 
+/**
+ * Вспомогательный класс, реализующий
+ * парсинг одного поста.
+ *
+ * @author Geraskin Egor
+ * @version 1.0
+ * @since 01.12.2020
+ */
 public class PostFactory {
     public static Post makePost(String url) throws IOException {
         Document doc = Jsoup.connect(url).get();

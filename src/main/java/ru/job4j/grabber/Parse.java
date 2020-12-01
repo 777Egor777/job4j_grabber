@@ -5,6 +5,13 @@ import ru.job4j.model.Post;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Интерфейс для парсинга постов.
+ *
+ * @author Geraskin Egor
+ * @version 1.0
+ * @since 01.12.2020
+ */
 public interface Parse {
     List<Post> list(String link) throws IOException;
 

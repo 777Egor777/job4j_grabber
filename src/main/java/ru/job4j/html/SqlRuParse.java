@@ -5,7 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.grabber.Parse;
-import ru.job4j.grabber.PostFactory;
+import ru.job4j.PostFactory;
 import ru.job4j.model.Post;
 
 import java.io.IOException;
@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class SqlRuParse implements Parse {
-
     @Override
     public List<Post> list(String link) throws IOException {
         List<Post> result = new LinkedList<>();
