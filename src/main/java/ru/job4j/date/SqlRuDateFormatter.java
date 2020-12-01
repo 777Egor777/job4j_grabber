@@ -18,6 +18,7 @@ public class SqlRuDateFormatter {
     private int day;
     private int hour;
     private int min;
+    private Calendar date;
 
     static {
         MONTH_MAP.put("янв", Calendar.JANUARY);
@@ -42,6 +43,7 @@ public class SqlRuDateFormatter {
         parseDate(date, parts[0]);
         parseTime(date, parts[1]);
         date.set(year, month, day, hour, min);
+        this.date = date;
         return new SimpleDateFormat("dd.MM.yyyy kk:mm").format(date.getTime());
     }
 
@@ -60,12 +62,14 @@ public class SqlRuDateFormatter {
             year =  Integer.parseInt(parts[2]) + YEAR_ADDITION;
         }
     }
+
     private void parseTime(Calendar date, String inDateStr) {
         String[] parts = inDateStr.split(":");
         hour =  Integer.parseInt(parts[0]);
         min =  Integer.parseInt(parts[1]);
     }
 
-    public static void main(String[] args) {
+    public Calendar getDate() {
+        return date;
     }
 }

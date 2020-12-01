@@ -10,22 +10,16 @@ import java.util.Calendar;
  * @since 01.12.2020
  */
 public class Post {
-    private int id;
     private String vacancyHeader;
     private String vacancyContent;
     private String vacancyLink;
     private Calendar vacancyDate;
 
-    public Post(int id, String vacancyHeader, String vacancyContent, String vacancyLink, Calendar vacancyDate) {
-        this.id = id;
+    public Post(String vacancyHeader, String vacancyContent, String vacancyLink, Calendar vacancyDate) {
         this.vacancyHeader = vacancyHeader;
         this.vacancyContent = vacancyContent;
         this.vacancyLink = vacancyLink;
         this.vacancyDate = vacancyDate;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getVacancyHeader() {
@@ -42,10 +36,6 @@ public class Post {
 
     public Calendar getVacancyDate() {
         return vacancyDate;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public void setVacancyHeader(String vacancyHeader) {
