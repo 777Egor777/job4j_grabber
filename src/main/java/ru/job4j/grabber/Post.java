@@ -1,7 +1,7 @@
 package ru.job4j.grabber;
 
 /**
- * Интерфейс для модели данных "пост"
+ * Модель данных "пост"
  *
  * @author Geraskin Egor
  * @version 1.0
