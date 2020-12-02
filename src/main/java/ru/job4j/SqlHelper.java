@@ -25,7 +25,7 @@ import java.sql.SQLException;
 public class SqlHelper {
     public static void execute(Connection cn, String query) {
         try (PreparedStatement ps = cn.prepareStatement(query)) {
-            ps.execute(query);
+            ps.execute();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

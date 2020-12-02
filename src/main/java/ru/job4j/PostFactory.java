@@ -5,7 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.date.SqlRuDateFormatter;
-import ru.job4j.model.Post;
+import ru.job4j.grabber.Post;
 
 import java.io.IOException;
 

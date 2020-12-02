@@ -43,6 +43,10 @@ public class SqlRuDateFormatter {
         parseDate(date, parts[0]);
         parseTime(date, parts[1]);
         date.set(year, month, day, hour, min);
+        return format(date);
+    }
+
+    public String format(Calendar date) {
         this.date = date;
         return new SimpleDateFormat("dd.MM.yyyy kk:mm").format(date.getTime());
     }
