@@ -16,6 +16,7 @@ public class PsqlStore implements Store, AutoCloseable {
     private final static String INSERT_QUERY = "insert into grabber.post(name, text, link, created) values(?, ?, ?, ?);";
     private final static String SELECT_ALL_QUERY = "select * from grabber.post;";
     private final static String FIND_BY_ID_QUERY = "select * from grabber.post where id=?;";
+    private final static String CFG_FILE_NAME = "app.properties";
 
     public PsqlStore(Properties cfg) {
         try {
@@ -105,14 +106,18 @@ public class PsqlStore implements Store, AutoCloseable {
         return result;
     }
 
-    public static void main(String[] args) {
+    private static Properties cfgLoad() {
         Properties cfg = new Properties();
-        try (InputStream in = PsqlStore.class.getClassLoader().getResourceAsStream("app.properties")) {
+        try (InputStream in = PsqlStore.class.getClassLoader().getResourceAsStream(CFG_FILE_NAME)) {
             cfg.load(in);
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return cfg;
+    }
 
+    public static void main(String[] args) {
+        Properties cfg = cfgLoad();
         Store store = new PsqlStore(cfg);
         Post post = new Post(
                 "Header",
