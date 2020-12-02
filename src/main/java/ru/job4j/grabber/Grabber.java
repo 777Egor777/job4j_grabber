@@ -28,7 +28,9 @@ public class Grabber implements Grab {
     private final static String EXCLUDED_LANGUAGE = "javascript";
 
     public Scheduler scheduler() throws SchedulerException {
-        return StdSchedulerFactory.getDefaultScheduler();
+        Scheduler scheduler =  StdSchedulerFactory.getDefaultScheduler();
+        scheduler.start();
+        return scheduler;
     }
 
     public void cfgLoad() throws IOException {
@@ -76,15 +78,20 @@ public class Grabber implements Grab {
                 List<Post> list = new LinkedList<>();
                 try {
                     list = parse.list(parsePageLink);
+                    System.out.println("!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
                 list.forEach(post -> {
                     if (correct(post)) {
+                        System.out.println(post);
                         store.save(post);
+                        System.out.println("Post saved in Postgres");
                     }
                 });
-                CFG.setProperty("current_page", "" + ++currentPage);
+                currentPage++;
+                CFG.setProperty("current_page", "" + currentPage);
             }
         }
     }

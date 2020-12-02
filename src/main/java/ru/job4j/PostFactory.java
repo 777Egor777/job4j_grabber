@@ -31,7 +31,7 @@ public class PostFactory {
 
     public String getVacancyHeader(Document doc) {
         Elements vacancyHeaderTable = doc.select(".messageHeader");
-        Element head  = vacancyHeaderTable.get(1);
+        Element head  = vacancyHeaderTable.get(0);
         return head.text();
     }
 

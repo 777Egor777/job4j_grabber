@@ -30,4 +30,11 @@ public class SqlRuParse implements Parse {
     public Post detail(String link) throws IOException {
         return PostFactory.makePost(link);
     }
+
+    public static void main(String[] args) throws IOException {
+        Parse parse = new SqlRuParse();
+        String link = "https://www.sql.ru/forum/job-offers/1";
+        List<Post> list = parse.list(link);
+        list.forEach(System.out::println);
+    }
 }
