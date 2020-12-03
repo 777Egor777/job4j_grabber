@@ -3,8 +3,9 @@ package ru.job4j.grabber;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -78,7 +79,6 @@ public class Grabber implements Grab {
                 List<Post> list = new LinkedList<>();
                 try {
                     list = parse.list(parsePageLink);
-                    System.out.println("!");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -96,19 +96,54 @@ public class Grabber implements Grab {
         }
     }
 
+    public void web(Store store) {
+        new Thread(() -> {
+            try (ServerSocket server = new ServerSocket(Integer.parseInt(CFG.getProperty("port")))) {
+                while (!server.isClosed()) {
+                    Socket socket = server.accept();
+
+                    try (OutputStream out = socket.getOutputStream()) {
+                        store.getAll().forEach(post -> {
+                            try {
+                                out.write("HTTP/1.1 200 OK\r\n".getBytes());
+                                out.write(System.lineSeparator().getBytes());
+                                out.write(post.toString().getBytes());
+                                out.write(System.lineSeparator().getBytes());
+                                out.write(System.lineSeparator().getBytes());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+
+                        });
+                    }
+
+
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    }
+
+    public static String getMsg(String line) {
+        String result = line.split("msg=")[1];
+        result = result.split(" ")[0];
+        return result;
+    }
+
     public static void main(String[] args) throws Exception {
         Grabber grab = new Grabber();
         grab.cfgLoad();
-        try (Store store = new PsqlStore(CFG)) {
-            Scheduler scheduler = grab.scheduler();
-            Parse parse = new SqlRuParse();
-            grab.init(parse, store, scheduler);
-            long workTimeInMillis =
-                    (long) Integer.parseInt(CFG.getProperty("time_for_page"))
-                  * (1 + Integer.parseInt(CFG.getProperty("number_of_pages")))
-                  * 1000;
-            Thread.sleep(workTimeInMillis);
-            scheduler.shutdown();
-        }
+        Store store = new PsqlStore(CFG);
+        Scheduler scheduler = grab.scheduler();
+        Parse parse = new SqlRuParse();
+        grab.init(parse, store, scheduler);
+        long workTimeInMillis =
+                (long) Integer.parseInt(CFG.getProperty("time_for_page"))
+                        * (1 + Integer.parseInt(CFG.getProperty("number_of_pages")))
+                        * 1000;
+        Thread.sleep(workTimeInMillis);
+        scheduler.shutdown();
+        grab.web(store);
     }
 }
