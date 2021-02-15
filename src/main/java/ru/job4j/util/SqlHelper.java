@@ -1,4 +1,4 @@
-package ru.job4j;
+package ru.job4j.util;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

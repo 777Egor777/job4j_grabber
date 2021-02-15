@@ -35,7 +35,7 @@ public class AlertRabbit {
                     .withIntervalInSeconds(interval)
                     .repeatForever();
             Trigger trigger = TriggerBuilder
-                    .newTrigger()
+                        .newTrigger()
                     .startNow()
                     .withSchedule(times)
                     .build();

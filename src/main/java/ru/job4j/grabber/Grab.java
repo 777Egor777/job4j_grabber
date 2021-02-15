@@ -22,5 +22,19 @@ import org.quartz.SchedulerException;
  * @since 01.12.2020
  */
 public interface Grab {
+    /**
+     * Основной метод для запуска работы программы.
+     * @param parse - объект, реализующий
+     *                интерфейс для парсинга
+     *                постов
+     * @param store - объект, реализующий
+     *                интерфейс для хранилища
+     *                постов
+     * @param scheduler - объект, реализующий
+     *                    периодичность парсинга
+     * @throws SchedulerException - исключение, которое возникает
+     *                              при некорректной работе
+     *                              периодизатора парсинга
+     */
     void init(Parse parse, Store store, Scheduler scheduler) throws SchedulerException;
 }

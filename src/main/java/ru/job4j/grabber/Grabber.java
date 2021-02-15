@@ -2,6 +2,7 @@ package ru.job4j.grabber;
 
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+import ru.job4j.util.ConnectionUtil;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -9,6 +10,7 @@ import java.net.Socket;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Основной класс приложения,
@@ -27,19 +29,57 @@ public class Grabber implements Grab {
     private final static Properties CFG = new Properties();
     private final static String INCLUDED_LANGUAGE = "java";
     private final static String EXCLUDED_LANGUAGE = "javascript";
+    private final static AtomicInteger CUR_PAGE_NUM = new AtomicInteger(1);
 
+    /**
+     * Метод создаёт объект
+     * для периодизации
+     * работы по парсингу
+     * вакансий.
+     * @return - объект периодизации
+     * @throws SchedulerException - исключение, которое
+     *                             может быть выброшено
+     *                             при инициализации объекта
+     *                             периодизации
+     */
     public Scheduler scheduler() throws SchedulerException {
         Scheduler scheduler =  StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
         return scheduler;
     }
 
+    /**
+     * Метод загружает cfg-
+     * Properties объект
+     * из .properties
+     * файла с помощью
+     * потока ввода.
+     *
+     * @throws IOException - исключение, которое
+     *                       может быть выброшено
+     *                       при считывании
+     *                       данных из файла
+     */
     public void cfgLoad() throws IOException {
         try (InputStream in = Grabber.class.getClassLoader().getResourceAsStream(CFG_PATH)) {
             CFG.load(in);
         }
     }
 
+    /**
+     * Основной метод для запуска работы программы.
+     * @param parse - объект, реализующий
+     *                интерфейс для парсинга
+     *                постов
+     * @param store - объект, реализующий
+     *                интерфейс для хранилища
+     *                постов
+     * @param scheduler - объект, реализующий
+     *                    периодичность парсинга
+     * @throws SchedulerException - исключение, которое возникает
+     *                              при некорректной работе
+     *                              периодизатора парсинга
+     */
     @Override
     public void init(Parse parse, Store store, Scheduler scheduler) throws SchedulerException {
         JobDataMap data = new JobDataMap();
@@ -55,27 +95,46 @@ public class Grabber implements Grab {
                 .startNow()
                 .withSchedule(times)
                 .build();
+        CUR_PAGE_NUM.set(1);
         scheduler.scheduleJob(job, trigger);
     }
 
-    public static boolean correct(Post post) {
+    /**
+     * В данном проекте мы парсим
+     * Java-вакансии. Соответственно
+     * Javascript-вакансии надо
+     * стараться исключать.
+     *
+     * @param post - вакансия, принадлежность
+     *               которой именно к Java
+     *               мы проверяем
+     * @return true - если это Java-вакансия
+     *         false - иначе
+     */
+    private static boolean correct(Post post) {
         String header = post.getVacancyHeader().toLowerCase();
         return header.contains(INCLUDED_LANGUAGE)
                 && !header.contains(EXCLUDED_LANGUAGE);
     }
 
+    /**
+     * Класс, который используется
+     * Scheduler-ом для парсинга
+     * очередной страницы сайта с
+     * вакансиями
+     */
     public static class GrabJob implements Job {
         @Override
         public void execute(JobExecutionContext context) {
             JobDataMap map =  context.getJobDetail().getJobDataMap();
             Store store = (Store) map.get("store");
             Parse parse = (Parse) map.get("parse");
-            int currentPage = Integer.parseInt(CFG.getProperty("current_page"));
+            int currentPage = CUR_PAGE_NUM.getAndIncrement();
             int numberOfPages = Integer.parseInt(CFG.getProperty("number_of_pages"));
             if (currentPage <= numberOfPages) {
-                String parsePageLink = String.format("%s/%s",
+                String parsePageLink = String.format("%s/%d",
                         CFG.getProperty("base_parse_url"),
-                        CFG.getProperty("current_page"));
+                        currentPage);
                 List<Post> list = new LinkedList<>();
                 try {
                     list = parse.list(parsePageLink);
@@ -90,12 +149,18 @@ public class Grabber implements Grab {
                         System.out.println("Post saved in Postgres");
                     }
                 });
-                currentPage++;
-                CFG.setProperty("current_page", "" + currentPage);
             }
         }
     }
 
+    /**
+     * Класс для вывода всех
+     * вакансий, содержащихся в
+     * хранилище на Web-сервер
+     * с помощью сокетов.
+     *
+     * @param store - хранилище
+     */
     public void web(Store store) {
         new Thread(() -> {
             try (ServerSocket server = new ServerSocket(Integer.parseInt(CFG.getProperty("port")))) {
@@ -125,16 +190,14 @@ public class Grabber implements Grab {
         }).start();
     }
 
-    public static String getMsg(String line) {
-        String result = line.split("msg=")[1];
-        result = result.split(" ")[0];
-        return result;
-    }
-
+    /**
+     * Точка входа программы. Здесь создаются
+     * все необходимые объекты и запускается парсинг.
+     */
     public static void main(String[] args) throws Exception {
         Grabber grab = new Grabber();
         grab.cfgLoad();
-        Store store = new PsqlStore(CFG);
+        Store store = new PsqlStore(ConnectionUtil.getConnectionByCfg(CFG));
         Scheduler scheduler = grab.scheduler();
         Parse parse = new SqlRuParse();
         grab.init(parse, store, scheduler);
@@ -144,6 +207,6 @@ public class Grabber implements Grab {
                         * 1000;
         Thread.sleep(workTimeInMillis);
         scheduler.shutdown();
-        grab.web(store);
+        //grab.web(store);
     }
 }

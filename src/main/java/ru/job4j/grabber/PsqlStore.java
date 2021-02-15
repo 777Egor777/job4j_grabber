@@ -1,14 +1,11 @@
 package ru.job4j.grabber;
 
-import ru.job4j.SqlHelper;
+import ru.job4j.util.SqlHelper;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Класс реализует интерфейс
@@ -51,27 +48,10 @@ public class PsqlStore implements Store, AutoCloseable {
      */
     private final static String FIND_BY_ID_QUERY = "select * from grabber.post where id=?;";
 
-    /**
-     * Путь конфигурационного файла,
-     * который содержит данные
-     * для подключения к базе
-     * данных через JDBC.
-     */
-    private final static String CFG_FILE_NAME = "app.properties";
-
-    /**
-     * Конструктор
-     * @param cfg - настройки для подключения
-     *              к БД
-     */
-    public PsqlStore(Properties cfg) {
-        try {
-            cn = getConnection(cfg);
-            createSchemaAndTable();
-        } catch (SQLException e) {
-            throw new IllegalStateException(e);
-        }
+    public PsqlStore(Connection cn) {
+        this.cn = cn;
     }
+
 
     /**
      * Создаём sql-схему и таблицу
@@ -80,28 +60,6 @@ public class PsqlStore implements Store, AutoCloseable {
      */
     private void createSchemaAndTable() {
         SqlHelper.executeFile(cn, CREATE_QUERY_FILE_PATH);
-    }
-
-    /**
-     * Метод создаёт соединение
-     * @param cfg - объект с найстроками
-     *              подключения к БД
-     *              через JDBC
-     * @return созданное соединение
-     * @throws SQLException
-     */
-    private Connection getConnection(Properties cfg) throws SQLException {
-        try {
-            Class.forName(cfg.getProperty("jdbc.driver"));
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
-        }
-
-        return DriverManager.getConnection(
-                cfg.getProperty("jdbc.url"),
-                cfg.getProperty("jdbc.username"),
-                cfg.getProperty("jdbc.password")
-        );
     }
 
     /**
@@ -124,18 +82,27 @@ public class PsqlStore implements Store, AutoCloseable {
      * объекта post
      * @param post - объект, данные из которого
      *               добавляются в БД.
+     * @return
      */
     @Override
-    public void save(Post post) {
-        try (PreparedStatement ps = cn.prepareStatement(INSERT_QUERY)) {
+    public int save(Post post) {
+        int result = -1;
+        try (PreparedStatement ps = cn.prepareStatement(INSERT_QUERY,
+                PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, post.getVacancyHeader());
             ps.setString(2, post.getVacancyContent());
             ps.setString(3, post.getVacancyLink());
             ps.setTimestamp(4, new Timestamp(post.getVacancyDate().getTimeInMillis()));
             ps.executeUpdate();
+            try (ResultSet gk = ps.getGeneratedKeys()) {
+                if (gk.next()) {
+                    result = gk.getInt(1);
+                }
+            }
         } catch (SQLException e) {
             throw new IllegalStateException(e);
         }
+        return result;
     }
 
     /**
@@ -201,39 +168,5 @@ public class PsqlStore implements Store, AutoCloseable {
             throw new IllegalStateException(e);
         }
         return result;
-    }
-
-    /**
-     * Метод считывает файл
-     * настроек.
-     * @return объект настроек типа
-     *         <code>Properties</code>
-     */
-    private static Properties cfgLoad() {
-        Properties cfg = new Properties();
-        try (InputStream in = PsqlStore.class.getClassLoader().getResourceAsStream(CFG_FILE_NAME)) {
-            cfg.load(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return cfg;
-    }
-
-    /**
-     * Демонстрация работы класса
-     * @param args
-     */
-    public static void main(String[] args) {
-        Properties cfg = cfgLoad();
-        Store store = new PsqlStore(cfg);
-        Post post = new Post(
-                "Header",
-                "Content",
-                "http://job4j.ru",
-                Calendar.getInstance()
-        );
-        store.save(post);
-        List<Post> posts = store.getAll();
-        System.out.println(posts.get(0));
     }
 }
