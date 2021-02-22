@@ -38,7 +38,7 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
-                <db.url>jdbc:postgresql://localhost/postgres</db.url>
+                <db.url>jdbc:postgresql://localhost:5432/postgres</db.url>
                 <db.username>postgres</db.username>
                 <db.password>password</db.password>
                 <db.driver>org.postgresql.Driver</db.driver>
@@ -171,10 +171,10 @@
                 <version>3.6.2</version>
                 <configuration>
                     <changeLogFile>${basedir}/db/master.xml</changeLogFile>
-                    <url>${db.url}</url>
-                    <driver>${db.driver}</driver>
-                    <username>${db.username}</username>
-                    <password>${db.password}</password>
+                    <url>jdbc:postgresql://localhost:5432/postgres</url>
+                    <driver>org.postgresql.Driver</driver>
+                    <username>postgres</username>
+                    <password>password</password>
                 </configuration>
                 <executions>
                     <execution>
