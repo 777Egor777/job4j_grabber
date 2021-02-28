@@ -6,6 +6,13 @@ jdk:
 # используем режим обычного пользователя для сборки проекта.
 sudo: false
 
+addons:
+  postgresql: '10'
+services:
+  - postgresql
+before_install:
+  - psql -c 'create database grabber_test;' -U postgres
+
 # после выполнения сборки запустить скрипт, который будет собирать статистику по JaCoCo
 # Здесь используется сторонни сервис https://codecov.io/
 after_success:
